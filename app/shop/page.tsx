@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/types';
-import { Search, Filter, Loader2, ChevronRight, Star, X } from 'lucide-react';
+import { Search, Filter, Loader2, ChevronRight, X } from 'lucide-react';
 
 export default function ShopPage() {
   const searchParams = useSearchParams();
@@ -49,7 +49,8 @@ export default function ShopPage() {
     return () => observer.disconnect();
   }, [products]);
 
-  const categories = ['all', ...new Set(products.map(p => p.category))];
+  // Fix: Use Array.from instead of spread operator on Set
+  const categories = ['all'].concat(Array.from(new Set(products.map(p => p.category))));
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -163,7 +164,7 @@ export default function ShopPage() {
               <Link 
                 key={product.id} 
                 href={`/product/${product.id}`}
-                className={`fade-in-up product-card rounded-3xl overflow-hidden group`}
+                className="fade-in-up product-card rounded-3xl overflow-hidden group"
                 style={{ transitionDelay: `${index * 50}ms` }}
               >
                 {/* Image */}
