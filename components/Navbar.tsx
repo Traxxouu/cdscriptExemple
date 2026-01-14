@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { User, LogOut, Menu, X, Sparkles } from 'lucide-react';
 
 export default function Navbar() {
@@ -13,6 +13,8 @@ export default function Navbar() {
   const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
+    const supabase = getSupabase();
+    
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
     });
@@ -30,19 +32,14 @@ export default function Navbar() {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // Determine if navbar should be visible
       if (currentScrollY < 100) {
-        // Always show at top
         setIsVisible(true);
       } else if (currentScrollY < lastScrollY) {
-        // Scrolling up - show navbar
         setIsVisible(true);
       } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down - hide navbar
         setIsVisible(false);
       }
       
-      // Add background blur when scrolled
       setIsScrolled(currentScrollY > 50);
       setLastScrollY(currentScrollY);
     };
@@ -52,6 +49,7 @@ export default function Navbar() {
   }, [lastScrollY]);
 
   const handleSignIn = async () => {
+    const supabase = getSupabase();
     await supabase.auth.signInWithOAuth({
       provider: 'discord',
       options: {
@@ -61,6 +59,7 @@ export default function Navbar() {
   };
 
   const handleSignOut = async () => {
+    const supabase = getSupabase();
     await supabase.auth.signOut();
     setUser(null);
   };

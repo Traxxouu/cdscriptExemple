@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { Product } from '@/types';
 import { Check, RefreshCw, Shield, Download, Loader2, ArrowLeft, Star, Users, Clock } from 'lucide-react';
 import Link from 'next/link';
@@ -15,16 +15,21 @@ export default function ProductPage() {
 
   useEffect(() => {
     async function fetchProduct() {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', params.id)
-        .single();
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', params.id)
+          .single();
 
-      if (error) {
-        console.error('Error fetching product:', error);
-      } else {
-        setProduct(data);
+        if (error) {
+          console.error('Error fetching product:', error);
+        } else {
+          setProduct(data);
+        }
+      } catch (error) {
+        console.error('Error:', error);
       }
       setLoading(false);
     }
@@ -35,7 +40,6 @@ export default function ProductPage() {
   }, [params.id]);
 
   useEffect(() => {
-    // Trigger animations
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -76,14 +80,12 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] pt-24 pb-20">
-      {/* Background Blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-40">
         <div className="blob blob-1" />
         <div className="blob blob-2" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6">
-        {/* Breadcrumb */}
         <Link 
           href="/shop" 
           className="inline-flex items-center gap-2 text-gray-500 hover:text-black mb-10 transition-colors group"
@@ -93,7 +95,6 @@ export default function ProductPage() {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          {/* Left - Image */}
           <div className="fade-in-left">
             <div className="glass-card rounded-[2rem] p-12 flex items-center justify-center min-h-[500px] sticky top-32">
               <div className="text-center">
@@ -105,9 +106,7 @@ export default function ProductPage() {
             </div>
           </div>
 
-          {/* Right - Info */}
           <div className="fade-in-right">
-            {/* Header */}
             <div className="mb-8">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
                 {product.name}
@@ -117,7 +116,6 @@ export default function ProductPage() {
               </p>
             </div>
 
-            {/* Stats */}
             <div className="flex flex-wrap gap-6 mb-10">
               <div className="flex items-center gap-2 text-gray-600">
                 <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
@@ -134,7 +132,6 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Features */}
             {product.features && product.features.length > 0 && (
               <div className="mb-10">
                 <h3 className="text-lg font-semibold mb-4">Fonctionnalités incluses</h3>
@@ -154,12 +151,10 @@ export default function ProductPage() {
               </div>
             )}
 
-            {/* Pricing */}
             <div id="buy" className="glass-card rounded-3xl p-8 mb-8">
               <h3 className="text-lg font-semibold mb-6">Choisir une option</h3>
               
               <div className="space-y-4">
-                {/* One-time Purchase */}
                 <div className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-indigo-200 transition-colors">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -176,7 +171,6 @@ export default function ProductPage() {
                   <BuyButton productId={product.id} type="one_time" />
                 </div>
 
-                {/* Subscription */}
                 {product.monthly_price && (
                   <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border-2 border-indigo-200 relative overflow-hidden">
                     <div className="absolute top-4 right-4">
@@ -206,7 +200,6 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Guarantees */}
             <div className="flex flex-wrap gap-6 text-sm text-gray-500">
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5 text-green-500" />

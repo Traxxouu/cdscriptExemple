@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { Product } from '@/types';
 import { Search, Filter, Loader2, ChevronRight, X } from 'lucide-react';
 
@@ -19,15 +19,20 @@ export default function ShopPage() {
 
   useEffect(() => {
     async function fetchProducts() {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching products:', error);
-      } else {
-        setProducts(data || []);
+        if (error) {
+          console.error('Error fetching products:', error);
+        } else {
+          setProducts(data || []);
+        }
+      } catch (error) {
+        console.error('Error:', error);
       }
       setLoading(false);
     }
@@ -35,7 +40,6 @@ export default function ShopPage() {
     fetchProducts();
   }, []);
 
-  // Trigger animation on mount
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -49,7 +53,6 @@ export default function ShopPage() {
     return () => observer.disconnect();
   }, [products]);
 
-  // Fix: Use Array.from instead of spread operator on Set
   const categories = ['all'].concat(Array.from(new Set(products.map(p => p.category))));
 
   const filteredProducts = products.filter(product => {
@@ -62,14 +65,12 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] pt-24 pb-20">
-      {/* Background Blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-50">
         <div className="blob blob-1" />
         <div className="blob blob-2" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6">
-        {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
             Explorer les <span className="gradient-text">scripts</span>
@@ -79,10 +80,8 @@ export default function ShopPage() {
           </p>
         </div>
 
-        {/* Search & Filters */}
         <div className="mb-12">
           <div className="flex flex-col md:flex-row gap-4">
-            {/* Search Bar */}
             <div className="flex-1 search-bar flex items-center gap-4 rounded-2xl p-2">
               <div className="flex-1 flex items-center gap-3 pl-4">
                 <Search className="w-5 h-5 text-gray-400" />
@@ -104,7 +103,6 @@ export default function ShopPage() {
               </div>
             </div>
 
-            {/* Filter Button */}
             <button 
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-6 py-4 rounded-2xl border-2 transition-all font-medium ${
@@ -121,7 +119,6 @@ export default function ShopPage() {
             </button>
           </div>
 
-          {/* Filter Options */}
           {showFilters && (
             <div className="mt-4 glass-card rounded-2xl p-6">
               <p className="text-sm font-medium text-gray-500 mb-4">Catégories</p>
@@ -144,7 +141,6 @@ export default function ShopPage() {
           )}
         </div>
 
-        {/* Results count */}
         <div className="mb-8">
           <p className="text-gray-500">
             {filteredProducts.length} script{filteredProducts.length > 1 ? 's' : ''} trouvé{filteredProducts.length > 1 ? 's' : ''}
@@ -153,7 +149,6 @@ export default function ShopPage() {
           </p>
         </div>
 
-        {/* Products Grid */}
         {loading ? (
           <div className="flex items-center justify-center py-32">
             <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
@@ -167,7 +162,6 @@ export default function ShopPage() {
                 className="fade-in-up product-card rounded-3xl overflow-hidden group"
                 style={{ transitionDelay: `${index * 50}ms` }}
               >
-                {/* Image */}
                 <div className="relative h-48 bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
                   <span className="text-6xl group-hover:scale-110 transition-transform duration-300">🚀</span>
                   <div className="absolute top-4 left-4">
@@ -175,7 +169,6 @@ export default function ShopPage() {
                   </div>
                 </div>
                 
-                {/* Content */}
                 <div className="p-6">
                   <h3 className="text-xl font-bold mb-2 group-hover:text-indigo-600 transition-colors">
                     {product.name}

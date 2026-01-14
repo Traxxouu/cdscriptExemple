@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, ArrowRight, TrendingUp, Shield, Zap, Users, Star, ChevronRight } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { Product } from '@/types';
 
 export default function Home() {
@@ -11,31 +11,27 @@ export default function Home() {
   const [popularScripts, setPopularScripts] = useState<Product[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Refs for scroll animations
-  const heroRef = useRef<HTMLDivElement>(null);
-  const featuresRef = useRef<HTMLDivElement>(null);
-  const scriptsRef = useRef<HTMLDivElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     setIsLoaded(true);
     
-    // Fetch popular scripts
     async function fetchPopularScripts() {
-      const { data } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(6);
-      
-      if (data) setPopularScripts(data);
+      try {
+        const supabase = getSupabase();
+        const { data } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(6);
+        
+        if (data) setPopularScripts(data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
     }
     
     fetchPopularScripts();
   }, []);
 
-  // Scroll animation observer
   useEffect(() => {
     const observerOptions = {
       threshold: 0.1,
@@ -50,7 +46,6 @@ export default function Home() {
       });
     }, observerOptions);
 
-    // Observe all animated elements
     document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right, .scale-in').forEach((el) => {
       observer.observe(el);
     });
@@ -74,11 +69,8 @@ export default function Home() {
         <div className="blob blob-3" />
       </div>
 
-      {/* Hero Section - Full Screen */}
-      <section 
-        ref={heroRef}
-        className="relative min-h-screen flex flex-col items-center justify-center px-6"
-      >
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-6">
         <div className="relative z-10 max-w-5xl mx-auto text-center">
           {/* Badge */}
           <div 
@@ -168,7 +160,7 @@ export default function Home() {
       </section>
 
       {/* Popular Scripts Section */}
-      <section ref={scriptsRef} className="relative py-32 px-6">
+      <section className="relative py-32 px-6">
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16">
@@ -204,7 +196,6 @@ export default function Home() {
                   href={`/product/${script.id}`}
                   className={`fade-in-up delay-${(index + 1) * 100} product-card rounded-3xl overflow-hidden group`}
                 >
-                  {/* Image */}
                   <div className="relative h-48 bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
                     <span className="text-6xl group-hover:scale-110 transition-transform">🚀</span>
                     <div className="absolute top-4 left-4">
@@ -220,7 +211,6 @@ export default function Home() {
                     )}
                   </div>
                   
-                  {/* Content */}
                   <div className="p-6">
                     <h3 className="text-xl font-bold mb-2 group-hover:text-indigo-600 transition-colors">
                       {script.name}
@@ -246,7 +236,6 @@ export default function Home() {
                 </Link>
               ))
             ) : (
-              // Placeholder cards
               [1, 2, 3].map((i) => (
                 <div 
                   key={i} 
@@ -268,7 +257,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section ref={featuresRef} className="relative py-32 px-6 bg-white/50">
+      <section className="relative py-32 px-6 bg-white/50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="fade-in-up text-4xl md:text-6xl font-bold tracking-tight mb-6">
@@ -314,7 +303,7 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section ref={statsRef} className="relative py-32 px-6">
+      <section className="relative py-32 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="scale-in glass-card rounded-[3rem] p-16">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -340,7 +329,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section ref={ctaRef} className="relative py-32 px-6">
+      <section className="relative py-32 px-6">
         <div className="max-w-5xl mx-auto text-center">
           <div className="fade-in-up">
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-8">

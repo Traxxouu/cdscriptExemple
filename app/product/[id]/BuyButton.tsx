@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { Loader2, ArrowRight } from 'lucide-react';
 
 interface BuyButtonProps {
@@ -16,6 +16,7 @@ export default function BuyButton({ productId, type }: BuyButtonProps) {
     setLoading(true);
 
     try {
+      const supabase = getSupabase();
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {

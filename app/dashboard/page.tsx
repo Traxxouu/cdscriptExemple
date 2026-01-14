@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { Purchase } from '@/types';
 import { Download, ExternalLink, Calendar, Package, Loader2, User, Settings, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -15,28 +15,33 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        router.push('/');
-        return;
-      }
+      try {
+        const supabase = getSupabase();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          router.push('/');
+          return;
+        }
 
-      setUser(user);
+        setUser(user);
 
-      const { data: purchasesData, error } = await supabase
-        .from('purchases')
-        .select(`
-          *,
-          products (*)
-        `)
-        .eq('user_id', user.id)
-        .eq('status', 'active');
+        const { data: purchasesData, error } = await supabase
+          .from('purchases')
+          .select(`
+            *,
+            products (*)
+          `)
+          .eq('user_id', user.id)
+          .eq('status', 'active');
 
-      if (error) {
-        console.error('Error fetching purchases:', error);
-      } else {
-        setPurchases(purchasesData || []);
+        if (error) {
+          console.error('Error fetching purchases:', error);
+        } else {
+          setPurchases(purchasesData || []);
+        }
+      } catch (error) {
+        console.error('Error:', error);
       }
 
       setLoading(false);
@@ -74,14 +79,12 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] pt-24 pb-20">
-      {/* Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-30">
         <div className="blob blob-1" />
         <div className="blob blob-2" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6">
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">
@@ -98,7 +101,6 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="fade-in-up glass-card rounded-3xl p-8">
             <div className="flex items-center gap-4">
@@ -137,7 +139,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Scripts */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Mes Scripts</h2>
           
@@ -146,7 +147,7 @@ export default function DashboardPage() {
               {purchases.map((purchase, index) => (
                 <div 
                   key={purchase.id} 
-                  className={`fade-in-up glass-card rounded-3xl p-6 group`}
+                  className="fade-in-up glass-card rounded-3xl p-6 group"
                   style={{ transitionDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -212,7 +213,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Account */}
         <div>
           <h2 className="text-2xl font-bold mb-6">Mon Compte</h2>
           <div className="glass-card rounded-3xl p-8">
